@@ -224,7 +224,7 @@
               ${
             groupedIcons[category]
               .map((icon) => `
-                  <div class="icon-item" title="${icon.name}">
+                  <div class="icon-item" title="${icon.name}" onclick="alert('${icon.url}')">
                     ${icon.svg || ""}
                     <p>${
                 (icon.name || "").replace(/([a-z])([A-Z])/g, "$1 $2")

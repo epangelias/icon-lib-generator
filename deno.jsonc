@@ -4,7 +4,9 @@
     "gen": "deno run -A gen/gen.ts",
     "web": "deno run -A web/web.ts"
   },
-  "imports": {},
+  "imports": {
+    "preact": "npm:preact@^10.24.3"
+  },
   "lock": false,
   "lint": {
     "rules": {
