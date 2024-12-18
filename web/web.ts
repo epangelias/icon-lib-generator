@@ -22,5 +22,7 @@ app.get("/data.json", async (c) => {
 
 
 const port = 8000;
+
 console.log(`Starting server on port ${port}`);
-Deno.serve(app.fetch);
+
+if (import.meta.main) Deno.serve(app.fetch);
