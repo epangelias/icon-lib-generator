@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Icon Preview</title>
+    <style>
+      :root {
+        --bg-light: #ffffff;
+        --bg-dark: #222222;
+        --text-light: #0d47a1;
+        --text-dark: #e3f2fd;
+        --primary: #2196f3;
+        --secondary: #1565c0;
+      }
+
+      [data-theme="light"] {
+        background-color: var(--bg-light);
+        color: var(--text-light);
+      }
+
+      [data-theme="dark"] {
+        background-color: var(--bg-dark);
+        color: var(--text-dark);
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        font-family: Arial, sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      header {
+        padding: 1rem;
+        background: var(--primary);
+        color: white;
+        text-align: center;
+      }
+
+      .container {
+        flex: 1;
+        padding: 1rem;
+        width: 880px;
+        max-width: 100%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .search-bar {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .search-bar input, .search-bar select {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        flex-grow: 1;
+      }
+
+      .icon-category {
+        margin-bottom: 1.5rem;
+      }
+
+      .icon-category h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+      }
+
+      .icon-item {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+        transition: transform 0.2s;
+        overflow: hidden;
+      }
+
+      .icon-item:hover {
+        transform: scale(1.05);
+      }
+
+      .icon-item svg {
+        width: 48px;
+        height: 48px;
+      }
+
+      .icon-item p {
+        margin: 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      footer {
+        margin-top: auto;
+        text-align: center;
+        padding: 1rem;
+        background: var(--secondary);
+        color: white;
+      }
+
+      .error {
+        color: red;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Icon Preview</h1>
+    </header>
+    <div class="container">
+      <div class="search-bar">
+        <input type="text" id="search" placeholder="Search icons...">
+        <select id="group-filter">
+          <option value="">All Groups</option>
+        </select>
+        <select id="tag-filter">
+          <option value="">All Tags</option>
+        </select>
+      </div>
+      <div id="icon-container">
+        <!-- Icons will be dynamically inserted here -->
+      </div>
+      <div id="error-message" class="error" style="display: none">
+        Error loading icons. Please try again later.
+      </div>
+    </div>
+    <footer>
+      <p>Probably made by AI</p>
+    </footer>
+
+    <script>
+      const dataUrl = "/data.json";
+      const searchInput = document.getElementById("search");
+      const groupFilter = document.getElementById("group-filter");
+      const tagFilter = document.getElementById("tag-filter");
+      const iconContainer = document.getElementById("icon-container");
+      const errorMessage = document.getElementById("error-message");
+
+      let icons = [];
+
+      async function fetchIcons() {
+        try {
+          const response = await fetch(dataUrl);
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          icons = await response.json();
+          renderFilters();
+          renderIcons();
+        } catch (error) {
+          console.error("Error fetching icons:", error);
+          errorMessage.style.display = "block";
+        }
+      }
+
+      function renderFilters() {
+        const groups = new Set(
+          icons.map((icon) => icon.group).filter(Boolean),
+        );
+        const tags = new Set(
+          icons.flatMap((icon) => icon.meta?.tags || []).filter(
+            Boolean,
+          ),
+        );
+
+        groupFilter.innerHTML += Array.from(groups)
+          .map((group) => `<option value="${group}">${group}</option>`)
+          .join("");
+
+        tagFilter.innerHTML += Array.from(tags)
+          .map((tag) => `<option value="${tag}">${tag}</option>`)
+          .join("");
+      }
+
+      function renderIcons() {
+        const query = searchInput.value.toLowerCase();
+        const selectedGroup = groupFilter.value;
+        const selectedTag = tagFilter.value;
+
+        const filteredIcons = icons.filter((icon) => {
+          const nameMatches =
+            icon.name?.toLowerCase().includes(query) ?? false;
+          const tags = icon.meta?.tags || [];
+          const tagsMatch = tags?.some((tag) =>
+            tag?.toString().toLowerCase().includes(query)
+          );
+          const groupMatches = !selectedGroup ||
+            icon.group === selectedGroup;
+          const tagMatches = !selectedTag || tags.includes(selectedTag);
+          return (nameMatches || tagsMatch) && groupMatches &&
+            tagMatches;
+        });
+
+        const groupedIcons = filteredIcons.reduce((acc, icon) => {
+          const category = icon.meta?.category || "Uncategorized";
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(icon);
+          return acc;
+        }, {});
+
+        iconContainer.innerHTML = Object.keys(groupedIcons)
+          .map((category) => `
+          <div class="icon-category">
+            <h2>${category}</h2>
+            <div class="icon-grid">
+              ${
+            groupedIcons[category]
+              .map((icon) => `
+                  <div class="icon-item" title="${icon.name}">
+                    ${icon.svg || ""}
+                    <p>${
+                (icon.name || "").replace(/([a-z])([A-Z])/g, "$1 $2")
+              }</p>
+                  </div>
+                `)
+              .join("")
+          }
+            </div>
+          </div>
+        `)
+          .join("");
+      }
+
+      searchInput.addEventListener("input", renderIcons);
+      groupFilter.addEventListener("change", renderIcons);
+      tagFilter.addEventListener("change", renderIcons);
+
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.body.setAttribute("data-theme", "dark");
+      } else {
+        document.body.setAttribute("data-theme", "light");
+      }
+
+      fetchIcons();
+    </script>
+  </body>
+</html>

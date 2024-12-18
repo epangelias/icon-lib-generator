@@ -1,0 +1,33 @@
+/*
+tags:
+  - move
+  - up
+  - down
+  - shift
+  - exchange
+  - switch
+  - vertical
+  - navigate
+  - change
+  - direction
+version: '2.29'
+unicode: fc1e
+*/
+const TransferVertical = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M10 4v16l-6 -5.5" />
+    <path d="M14 20v-16l6 5.5" />
+  </svg>
+);
+
+export default TransferVertical;

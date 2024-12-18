@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    // Generate Icon Theme
+    "gen": "deno run -A gen/gen.ts",
+    "web": "deno run -A web/web.ts"
+  },
+  "imports": {},
+  "lock": false,
+  "lint": {
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
+      ]
+    }
+  }
+}
